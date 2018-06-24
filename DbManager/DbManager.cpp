@@ -63,6 +63,7 @@ void DbManager :: consultDatabase() {
 
 void DbManager :: consultRecord() {
   record_t filters = this->request.dbRecords[0];
+  Logger :: getInstance()->registrar("Se utilizan los filtros { nombre: " + string(filters.nombre) + ", direccion: " + string(filters.direccion) + ", telefono: " + string(filters.telefono) + " }");
   vector<record_t> results = this->db->selectWhere(filters);
   if (results.size() == 0) {
     message_t response = createResponse(this->request.pid, 0, NULL, false);
@@ -76,7 +77,7 @@ void DbManager :: consultRecord() {
       int recordNumber = i + 1;
       bool lastItem = lastRecord(recordNumber, results.size());
       if (limitReached(recordNumber) || lastItem) {
-        message_t response = createResponse(this->request.mtype, 0, &chunk, !lastItem);
+        message_t response = createResponse(this->request.pid, 0, &chunk, !lastItem);
         this->response.push_back(response);
         chunk.clear();
       }

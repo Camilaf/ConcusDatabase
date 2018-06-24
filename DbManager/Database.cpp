@@ -52,13 +52,13 @@ vector<record_t> Database :: selectAll() {
 }
 
 bool Database :: filteredElement(record_t element, record_t filters) {
-  if (!isEmpty(filters.nombre) && (filters.nombre != element.nombre))
+  if (!isEmpty(filters.nombre) && (strcmp(filters.nombre, element.nombre) != 0))
     return false;
 
-  if (!isEmpty(filters.direccion) && (filters.direccion != element.direccion))
+  if (!isEmpty(filters.direccion) && (strcmp(filters.direccion, element.direccion) != 0))
     return false;
 
-  if (!isEmpty(filters.telefono) && (filters.telefono != element.telefono))
+  if (!isEmpty(filters.telefono) && (strcmp(filters.telefono, element.telefono) != 0))
     return false;
 
   return true;
@@ -67,8 +67,10 @@ bool Database :: filteredElement(record_t element, record_t filters) {
 vector<record_t> Database :: selectWhere(record_t filters) {
   vector<record_t> result;
   for (size_t i = 0; i < this->records.size(); i++) {
-    if (filteredElement(this->records[i], filters))
+    if (filteredElement(this->records[i], filters)) {
+      Logger :: getInstance()->registrar("Se filtro el registro { " + string(this->records[i].nombre) + string(this->records[i].direccion) + string(this->records[i].telefono) + " }");
       result.push_back(this->records[i]);
+    }
   }
   return result;
 }

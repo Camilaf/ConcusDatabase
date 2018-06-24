@@ -62,6 +62,42 @@ void Client :: consultDatabase() {
 }
 
 void Client :: consultDatabaseRecord(map<string, string> filters) {
+  this->request.mtype = MANAGER_ID;
+  this->request.pid = getpid();
+  this->request.command = GET_WHERE;
+  record_t record;
+  strcpy(record.nombre, filters["nombre"].c_str());
+  strcpy(record.direccion, filters["direccion"].c_str());
+  strcpy(record.telefono, filters["telefono"].c_str());
+  this->request.dbRecords[0] = record;
+  int result = this->queue->escribir(this->request);
+  if (result < 0) {
+    if (errno == EINTR)
+      return;
+    perror("No se pudo escribir el mensaje al gestor");
+  }
+
+  message_t response;
+  result = this->queue->leer(getpid(), &response);
+  if (result < 0) {
+    if (errno == EINTR)
+      return;
+    perror("No se pudo leer el mensaje del gestor");
+  }
+
+  cout << "Base de datos consultada. Registros:" << endl;
+  printRecords(response.dbRecords);
+
+  // Si la cantidad de registros supera RECORD_LIMIT los recibo tambien
+  while (response.next) {
+    result = this->queue->leer(getpid(), &response);
+    if (result < 0) {
+      if (errno == EINTR)
+        return;
+      perror("No se pudo leer el mensaje del gestor");
+    }
+    printRecords(response.dbRecords);
+  }
 }
 
 void Client :: addDatabaseRecord(map<string, string> fields) {
