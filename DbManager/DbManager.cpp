@@ -12,14 +12,7 @@ DbManager :: ~DbManager () {
   delete this->queue;
 }
 
-/* Devuelve un string con información sobre la solicitud
- * recibida.
- */
-string DbManager :: getRequest() {
-  int pid = this->request.pid;
-  int cmd = this->request.command;
-  string request = "";
-
+string getCommand(int cmd) {
   string command = "";
   if (cmd == GET_ALL)
     command = "SELECTALL";
@@ -27,6 +20,17 @@ string DbManager :: getRequest() {
     command = "SELECTWHERE";
   else if (cmd == ADD_RECORD)
     command = "INSERT";
+  return command;
+}
+
+/* Devuelve un string con información sobre la solicitud
+ * recibida.
+ */
+string DbManager :: getRequest() {
+  int pid = this->request.pid;
+  int cmd = this->request.command;
+  string request = "";
+  string command = getCommand(cmd);
 
   request += "Cliente PID " + to_string(pid) + ", comando " + command;
   if (cmd != GET_ALL) {
@@ -47,11 +51,18 @@ string DbManager :: getRequest() {
   return request;
 }
 
+/* Método encargado de leer en la cola de mensajes la solicitud
+ * de algún cliente, utilizando como tipo el ID del gestor definido,
+ * sobre el cual los clientes envían las peticiones.
+ */
 bool DbManager :: receiveRequest() {
   int res = this->queue->leer(MANAGER_ID, &(this->request));
   return (res >= 0);
 }
 
+/* Método encargado de definir el mensaje de respuesta al cliente,
+ * de acuerdo con los parámetros definidos.
+ */
 message_t DbManager :: createResponse(long mtype, int command, vector<record_t> *records, bool next) {
   message_t message;
   message.mtype = mtype;
@@ -96,18 +107,27 @@ void DbManager :: sendRegisters(vector<record_t> results) {
   }
 }
 
+/* Método encargado de consultar todos los registros de la base de
+ * datos, y de definir el mensaje de respuesta correspondiente al cliente.
+ */
 void DbManager :: consultDatabase() {
    vector<record_t> database = this->db->selectAll();
    sendRegisters(database);
 }
 
-void DbManager :: consultRecord() {
+/* Método encargado de filtrar los registros de la base de datos,
+ * y de definir el mensaje de respuesta correspondiente al cliente.
+ */
+void DbManager :: consultRecords() {
   record_t filters = this->request.dbRecords[0];
   Logger :: getInstance()->registrar("Se utilizan los filtros { nombre: " + string(filters.nombre) + ", direccion: " + string(filters.direccion) + ", telefono: " + string(filters.telefono) + " }");
   vector<record_t> results = this->db->selectWhere(filters);
   sendRegisters(results);
 }
 
+/* Método encargado de agregar un registro a la base de datos, y
+ * de definir el mensaje de respuesta correspondiente al cliente.
+ */
 void DbManager :: addRecord() {
   record_t record = this->request.dbRecords[0];
   int result = this->db->addRecord(record);
@@ -123,6 +143,11 @@ void DbManager :: manageInvalidRequest() {
   this->response.push_back(message);
 }
 
+/* Se encarga de procesar la solitud del cliente. De acuerdo con el comando
+ * o acción a realizar, ejecuta distintos métodos que se encargan de realizar
+ * esa acción, comunicándose con la base de datos y definiendo el mensaje de
+ * respuesta.
+ */
 bool DbManager :: processRequest() {
   Logger :: getInstance()->registrar("Recibe la peticion con PID: " + to_string(this->request.pid) + " command: " + to_string(this->request.command));
   int command = this->request.command;
@@ -133,7 +158,7 @@ bool DbManager :: processRequest() {
       break;
     case GET_WHERE:
       Logger :: getInstance()->registrar("Se pide consultar la base de datos mediante filtros");
-      consultRecord();
+      consultRecords();
       break;
     case ADD_RECORD:
       Logger :: getInstance()->registrar("Se pide agregar un registro en la base de datos");
@@ -147,6 +172,9 @@ bool DbManager :: processRequest() {
   return true;
 }
 
+/* Se ocupa de responder la solicitud del cliente, enviando a la
+ * cola de mensajes la respuesta definida.
+ */
 bool DbManager :: respondRequest() {
   for (size_t i = 0; i < this->response.size(); i++) {
     int res = this->queue->escribir(this->response[i]);

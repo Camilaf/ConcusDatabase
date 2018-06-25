@@ -17,7 +17,7 @@ private:
   Database* db;
 
   void consultDatabase();
-  void consultRecord();
+  void consultRecords();
   void addRecord();
   void manageInvalidRequest();
   void sendRegisters(vector<record_t> results);
