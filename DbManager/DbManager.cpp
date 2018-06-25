@@ -12,6 +12,41 @@ DbManager :: ~DbManager () {
   delete this->queue;
 }
 
+/* Devuelve un string con información sobre la solicitud
+ * recibida.
+ */
+string DbManager :: getRequest() {
+  int pid = this->request.pid;
+  int cmd = this->request.command;
+  string request = "";
+
+  string command = "";
+  if (cmd == GET_ALL)
+    command = "SELECTALL";
+  else if (cmd == GET_WHERE)
+    command = "SELECTWHERE";
+  else if (cmd == ADD_RECORD)
+    command = "INSERT";
+
+  request += "Cliente PID " + to_string(pid) + ", comando " + command;
+  if (cmd != GET_ALL) {
+    record_t record = this->request.dbRecords[0];
+    string name = record.nombre;
+    string address = record.direccion;
+    string telephone = record.telefono;
+
+    if (!name.empty())
+      request += ", nombre=" + name;
+    if (!address.empty())
+      request += ", direccion=" + address;
+    if (!telephone.empty())
+      request += ", telefono=" + telephone;
+
+  }
+  request += '\n';
+  return request;
+}
+
 bool DbManager :: receiveRequest() {
   int res = this->queue->leer(MANAGER_ID, &(this->request));
   return (res >= 0);
@@ -37,40 +72,16 @@ bool lastRecord(int recordNumber, int databaseItems) {
   return (recordNumber == databaseItems);
 }
 
-void DbManager :: consultDatabase() {
-   vector<record_t> database = this->db->selectAll();
-
-   if (database.size() == 0) {
-     Logger :: getInstance()->registrar("La base de datos consultada no tiene registros");
-     message_t response = createResponse(this->request.pid, 0, NULL, false);
-     this->response.push_back(response);
-   }
-   else {
-     Logger :: getInstance()->registrar("La base de datos consultada tiene registros");
-     vector<record_t> chunk;
-     for (size_t i = 0; i < database.size(); i++) {
-       chunk.push_back(database[i]);
-       int recordNumber = i + 1;
-       bool lastItem = lastRecord(recordNumber, database.size());
-       if (limitReached(recordNumber) || lastItem) {
-         message_t response = createResponse(this->request.pid, 0, &chunk, !lastItem);
-         this->response.push_back(response);
-         chunk.clear();
-       }
-     }
-   }
-}
-
-void DbManager :: consultRecord() {
-  record_t filters = this->request.dbRecords[0];
-  Logger :: getInstance()->registrar("Se utilizan los filtros { nombre: " + string(filters.nombre) + ", direccion: " + string(filters.direccion) + ", telefono: " + string(filters.telefono) + " }");
-  vector<record_t> results = this->db->selectWhere(filters);
+/* Recibe un vector con los registros a enviar. Se encarga de
+ * definir un mensaje de respuesta al cliente de acuerdo a si
+ * hay o no registros a enviar.
+ */
+void DbManager :: sendRegisters(vector<record_t> results) {
   if (results.size() == 0) {
     message_t response = createResponse(this->request.pid, 0, NULL, false);
     this->response.push_back(response);
   }
   else {
-    // REFACTOR CON LO DE ARRIBA
     vector<record_t> chunk;
     for (size_t i = 0; i < results.size(); i++) {
       chunk.push_back(results[i]);
@@ -83,6 +94,18 @@ void DbManager :: consultRecord() {
       }
     }
   }
+}
+
+void DbManager :: consultDatabase() {
+   vector<record_t> database = this->db->selectAll();
+   sendRegisters(database);
+}
+
+void DbManager :: consultRecord() {
+  record_t filters = this->request.dbRecords[0];
+  Logger :: getInstance()->registrar("Se utilizan los filtros { nombre: " + string(filters.nombre) + ", direccion: " + string(filters.direccion) + ", telefono: " + string(filters.telefono) + " }");
+  vector<record_t> results = this->db->selectWhere(filters);
+  sendRegisters(results);
 }
 
 void DbManager :: addRecord() {

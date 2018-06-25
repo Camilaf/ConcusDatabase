@@ -15,6 +15,8 @@ private:
   Cola<message_t>* queue;
   message_t request;
   void printRecords(record_t *records);
+  int sendRequest(int command, map<string, string> *fields);
+  void receiveRegisters();
 
 public:
   Client(const string& file, const char letter);
