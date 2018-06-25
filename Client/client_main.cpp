@@ -110,7 +110,8 @@ map<string, string> parseData(string statement) {
     string field = tokens[i].substr(0, endOfCommand);
 
     // Elimino las comillas para almacenar el dato
-    string value = tokens[i].substr(endOfCommand + 2, tokens[i].find('"', endOfCommand + 2) - (endOfCommand + 2));
+    size_t endOfValue = tokens[i].find('"', endOfCommand + 2) - (endOfCommand + 2);
+    string value = tokens[i].substr(endOfCommand + 2, endOfValue);
     data.insert(pair<string, string> (field, value));
   }
   return data;

@@ -101,4 +101,32 @@ void Client :: consultDatabaseRecord(map<string, string> filters) {
 }
 
 void Client :: addDatabaseRecord(map<string, string> fields) {
+  this->request.mtype = MANAGER_ID;
+  this->request.pid = getpid();
+  this->request.command = ADD_RECORD;
+  record_t record;
+  strcpy(record.nombre, fields["nombre"].c_str());
+  strcpy(record.direccion, fields["direccion"].c_str());
+  strcpy(record.telefono, fields["telefono"].c_str());
+  this->request.dbRecords[0] = record;
+  int result = this->queue->escribir(this->request);
+  if (result < 0) {
+    if (errno == EINTR)
+      return;
+    perror("No se pudo escribir el mensaje al gestor");
+  }
+
+  message_t response;
+  result = this->queue->leer(getpid(), &response);
+  if (result < 0) {
+    if (errno == EINTR)
+      return;
+    perror("No se pudo leer el mensaje del gestor");
+  }
+
+  if (response.command == INSERT_OK)
+    cout << "Registro agregado con exito a la Base de Datos" << endl;
+
+  else if (response.command == REPEATED_RECORD)
+    cout << "No se pudo insertar el registro: ya existe en la Base de Datos" << endl;
 }
