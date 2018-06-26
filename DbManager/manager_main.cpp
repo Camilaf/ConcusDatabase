@@ -32,22 +32,22 @@ int main(int argc, char *argv[]) {
     if (!manager.receiveRequest()) {
       if (errno == EINTR)
         break;
-      perror("Error al recibir la peticion");
+      perror("Error al recibir la petición");
     }
 
-    cout << "> Peticion recibida: " << manager.getRequest() << endl;
+    cout << "> Petición recibida: " << manager.getRequest() << endl;
     if (!manager.processRequest()) {
       if (errno == EINTR)
         break;
-      perror("Error al recibir la peticion");
+      perror("Error al procesar la petición");
     }
-    cout << "> Peticion procesada" << endl;
+    cout << "> Petición procesada" << endl;
     if (!manager.respondRequest()) {
       if (errno == EINTR)
         break;
-      perror("Error al recibir la peticion");
+      perror("Error al responder la petición");
     }
-    cout << "> Peticion enviada" << endl;
+    cout << "> Petición enviada" << endl;
 
   }
 

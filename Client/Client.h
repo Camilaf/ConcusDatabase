@@ -16,15 +16,15 @@ private:
   message_t request;
   void printRecords(record_t *records);
   int sendRequest(int command, map<string, string> *fields);
-  void receiveRegisters();
+  bool receiveRegisters();
 
 public:
   Client(const string& file, const char letter);
   ~Client();
 
-  void consultDatabase();
-  void consultDatabaseRecord(map<string, string> filters);
-  void addDatabaseRecord(map<string, string> fields);
+  bool consultDatabase();
+  bool consultDatabaseRecord(map<string, string> filters);
+  bool addDatabaseRecord(map<string, string> fields);
 
 };
 

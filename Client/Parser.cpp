@@ -34,7 +34,7 @@ vector<string> Parser :: tokenizeString(string str) {
 
   for (size_t i = 0; i < str.size(); i++) {
     if (str[i] == ' ') {
-      if (firstSpace || (str[i - 1] == '"') || (str[i - 1] == '\'')) {
+      if (firstSpace || (str[i - 1] == '"')) {
         if (!token.empty()) {
           tokens.push_back(token);
           token = "";
@@ -78,7 +78,7 @@ bool Parser :: hasData(string element, size_t start, size_t end) {
 
   char firstElement = element[start];
   char lastElement = element[end];
-  return (((firstElement == '"') && (lastElement  == '"')) || ((firstElement == '\'') && (lastElement  == '\'')));
+  return ((firstElement == '"') && (lastElement  == '"'));
 }
 
 /* Recibe un vector con cada campo y su valor asignado, junto con un
@@ -159,7 +159,7 @@ map<string, string> Parser :: parseData(string statement) {
  * inválida o no, de acuerdo a lo definido por el programa
  * Cliente.
  * Ejemplo sentencia válida:
- * insert nombre="Juana" direccion="Arenales 234" telefono="45678990"  
+ * insert nombre="Juana" direccion="Arenales 234" telefono="45678990"
  */
 bool Parser :: invalidSyntax(string statement) {
   vector<string> tokens = tokenizeString(statement);

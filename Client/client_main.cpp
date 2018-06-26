@@ -63,19 +63,22 @@ int main(int argc, char *argv[]) {
 
     if (command == GET_ALL_CMD) {
       Logger :: getInstance()->registrar("Cliente " + to_string(getpid()) + " quiere consultar todos los registros de la base de datos");
-      client.consultDatabase();
+      if (!client.consultDatabase())
+        break;
     }
 
     if (command == GET_WHERE_CMD) {
       Logger :: getInstance()->registrar("Cliente " + to_string(getpid()) + " quiere consultar la base de datos utilizando filtros");
       map<string, string> filters = Parser :: getInstance()->parseData(statement);
-      client.consultDatabaseRecord(filters);
+      if (!client.consultDatabaseRecord(filters))
+        break;
     }
 
     if (command == ADD_CMD) {
       Logger :: getInstance()->registrar("Cliente " + to_string(getpid()) + " quiere agregar un registro a la base de datos");
       map<string, string> fields = Parser :: getInstance()->parseData(statement);
-      client.addDatabaseRecord(fields);
+      if(!client.addDatabaseRecord(fields))
+        break;
     }
   }
 

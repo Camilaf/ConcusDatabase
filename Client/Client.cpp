@@ -49,13 +49,16 @@ void Client :: printRecords(record_t *records) {
 /* Método encargado de recibir la respuesta del gestor de la base de datos
  * a la consulta realizada, y de imprimir en la consola los registros.
  */
-void Client :: receiveRegisters() {
+bool Client :: receiveRegisters() {
   message_t response;
   int result = this->queue->leer(getpid(), &response);
   if (result < 0) {
-    if (errno == EINTR)
-      return;
-    perror("No se pudo leer el mensaje del gestor");
+    if (result == EIDRM) {
+      perror("Error: el gestor finalizó la ejecución");
+    }
+    else
+      perror("No se pudo leer el mensaje del gestor");
+    return false;
   }
 
   cout << "Base de datos consultada. Registros:" << endl << endl;
@@ -65,12 +68,12 @@ void Client :: receiveRegisters() {
   while (response.next) {
     result = this->queue->leer(getpid(), &response);
     if (result < 0) {
-      if (errno == EINTR)
-        return;
       perror("No se pudo leer el mensaje del gestor");
+      return false;
     }
     printRecords(response.dbRecords);
   }
+  return true;
 }
 
 /* Se ocupa de definir y enviar el struct message que recibirá
@@ -78,14 +81,15 @@ void Client :: receiveRegisters() {
  * todos los registros de la base de datos. Recibe e imprime el
  * resultado.
  */
-void Client :: consultDatabase() {
+bool Client :: consultDatabase() {
   int result = sendRequest(GET_ALL, NULL);
   if (result < 0) {
-    if (errno == EINTR)
-      return;
-    perror("No se pudo escribir el mensaje al gestor");
+    perror("No se pudo leer el mensaje del gestor");
+    return false;
   }
-  receiveRegisters();
+  if (!receiveRegisters())
+    return false;
+  return true;
 }
 
 /* Se ocupa de definir y enviar el struct message que recibirá
@@ -93,14 +97,15 @@ void Client :: consultDatabase() {
  * los registros de la base de datos que cumplan con los filtros
  * indicados por parámetro. Recibe e imprime el resultado.
  */
-void Client :: consultDatabaseRecord(map<string, string> filters) {
+bool Client :: consultDatabaseRecord(map<string, string> filters) {
   int result = sendRequest(GET_WHERE, &filters);
   if (result < 0) {
-    if (errno == EINTR)
-      return;
     perror("No se pudo escribir el mensaje al gestor");
+    return false;
   }
-  receiveRegisters();
+  if (!receiveRegisters())
+    return false;
+  return true;
 }
 
 /* Se ocupa de definir y enviar el struct message que recibirá
@@ -108,20 +113,18 @@ void Client :: consultDatabaseRecord(map<string, string> filters) {
  * un registro en la base de datos. Recibe la respuesta a la
  * operación y la imprime por consola.
  */
-void Client :: addDatabaseRecord(map<string, string> fields) {
+bool Client :: addDatabaseRecord(map<string, string> fields) {
   int result = sendRequest(ADD_RECORD, &fields);
   if (result < 0) {
-    if (errno == EINTR)
-      return;
     perror("No se pudo escribir el mensaje al gestor");
+    return false;
   }
 
   message_t response;
   result = this->queue->leer(getpid(), &response);
   if (result < 0) {
-    if (errno == EINTR)
-      return;
     perror("No se pudo leer el mensaje del gestor");
+    return false;
   }
 
   if (response.command == INSERT_OK)
@@ -132,4 +135,6 @@ void Client :: addDatabaseRecord(map<string, string> fields) {
 
   else if (response.command == INSERT_ERROR)
     cout << "No se pudo insertar el registro en la Base de Datos ya que tiene datos vacios" << endl;
+
+  return true;
 }
