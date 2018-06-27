@@ -26,7 +26,6 @@ string getValidStatement() {
   getline(cin, statement);
 
   while (Parser :: getInstance()->invalidSyntax(statement)) {
-    Logger :: getInstance()->registrar("Cliente: Petición con comando inválido '" + statement + "'");
     cout << "Opción inválida, intente nuevamente." << endl;
     cout << ">>> ";
     getline(cin, statement);
@@ -82,7 +81,7 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  Logger :: getInstance()->registrar("Cliente " + to_string(getpid()) + " ingreso el comando de salida");
+  Logger :: getInstance()->registrar("Cliente " + to_string(getpid()) + " ingresó el comando de salida");
   cout << "Finalizando cliente..." << endl << endl;
   Logger :: destruir();
   Parser :: destruir();

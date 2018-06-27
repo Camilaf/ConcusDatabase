@@ -2,11 +2,13 @@
 
 DbManager :: DbManager(const string& file, const char letter) {
   this->queue = new Cola<message_t> (file, letter);
+  Logger :: getInstance()->registrar("Se inicia la base de datos");
   this->db = new Database(DB_FILE);
   memset(&(this->request), 0, sizeof(message_t));
 }
 
 DbManager :: ~DbManager () {
+  Logger :: getInstance()->registrar("Se destruye la cola de mensajes");
   this->queue->destruir();
   delete this->db;
   delete this->queue;
@@ -90,12 +92,14 @@ bool lastRecord(int recordNumber, int databaseItems) {
 void DbManager :: sendRegisters(vector<record_t> results) {
   if (results.size() == 0) {
     message_t response = createResponse(this->request.pid, 0, NULL, false);
+    Logger :: getInstance()->registrar("No se encontraron resultados a la consulta");
     this->response.push_back(response);
   }
   else {
     vector<record_t> chunk;
     for (size_t i = 0; i < results.size(); i++) {
       chunk.push_back(results[i]);
+      Logger :: getInstance()->registrar("Se prepara para enviar el registro { nombre: " + string(results[i].nombre) + ", direccion: " + string(results[i].direccion) + ", telefono: " + string(results[i].telefono) + " }");
       int recordNumber = i + 1;
       bool lastItem = lastRecord(recordNumber, results.size());
       if (limitReached(recordNumber) || lastItem) {
@@ -154,7 +158,7 @@ void DbManager :: manageInvalidRequest() {
  * respuesta.
  */
 bool DbManager :: processRequest() {
-  Logger :: getInstance()->registrar("Recibe la peticion con PID: " + to_string(this->request.pid) + " command: " + to_string(this->request.command));
+  Logger :: getInstance()->registrar("Recibe la petición con PID: " + to_string(this->request.pid) + " command: " + to_string(this->request.command));
   int command = this->request.command;
   switch(command) {
     case GET_ALL:
@@ -170,7 +174,7 @@ bool DbManager :: processRequest() {
       addRecord();
       break;
     default:
-      Logger :: getInstance()->registrar("Peticion con comando invalido");
+      Logger :: getInstance()->registrar("Petición con comando invalido");
       manageInvalidRequest();
       return false;
   }

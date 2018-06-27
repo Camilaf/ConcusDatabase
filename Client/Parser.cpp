@@ -179,19 +179,19 @@ bool Parser :: invalidSyntax(string statement) {
   string command = toLower(tokens[0]);
   if (command == GET_ALL_CMD) {
     if (tokens.size() > 1) {
-      Logger :: getInstance()->registrar("Cliente: Peticion con comando invalido: '" + statement + "'");
+      Logger :: getInstance()->registrar("Cliente " + to_string(getpid()) + ": Petición con comando inválido: '" + statement + "'");
       return true;
     }
   }
   else if (command == GET_WHERE_CMD) {
     if (tokens.size() > 4 || invalidFields(tokens, false)) {
-      Logger :: getInstance()->registrar("Cliente: Peticion con comando invalido: '" + statement + "'");
+      Logger :: getInstance()->registrar("Cliente " + to_string(getpid()) + ": Petición con comando inválido: '" + statement + "'");
       return true;
     }
   }
   else if (command == ADD_CMD) {
     if (tokens.size() > 4 || invalidFields(tokens, true)) {
-      Logger :: getInstance()->registrar("Cliente: Peticion con comando invalido: '" + statement + "'");
+      Logger :: getInstance()->registrar("Cliente " + to_string(getpid()) + ": Petición con comando inválido: '" + statement + "'");
       return true;
     }
   }
@@ -200,10 +200,10 @@ bool Parser :: invalidSyntax(string statement) {
       return true;
   }
   else {
-    Logger :: getInstance()->registrar("Cliente: Peticion con comando invalido: '" + statement + "'");
+    Logger :: getInstance()->registrar("Cliente " + to_string(getpid()) + ": Petición con comando inválido: '" + statement + "'");
     return true;
   }
 
-  Logger :: getInstance()->registrar("Cliente: Peticion con comando valido: '" + statement + "'");
+  Logger :: getInstance()->registrar("Cliente " + to_string(getpid()) + ": Petición con comando válido: '" + statement + "'");
   return false;
 }

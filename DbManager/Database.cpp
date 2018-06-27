@@ -15,7 +15,7 @@ void Database :: recoverRecords() {
   Logger :: getInstance()->registrar("Se abre el archivo que contiene a la base de datos en caso de existir");
 
   if (database.fail()) {
-    Logger :: getInstance()->registrar("No hay una base de datos existente: comienza vacia");
+    Logger :: getInstance()->registrar("No hay una base de datos existente: comienza vacía");
   }
   else {
     string record;
@@ -34,7 +34,7 @@ void Database :: recoverRecords() {
       strcpy(dbRecord.nombre, name.c_str());
       strcpy(dbRecord.direccion, address.c_str());
       strcpy(dbRecord.telefono, telephone.c_str());
-      Logger :: getInstance()->registrar("Se recupero el registro: {nombre: " + string(dbRecord.nombre) + ", direccion: " + string(dbRecord.direccion) + ", telefono: " + string(dbRecord.telefono) + "}");
+      Logger :: getInstance()->registrar("Se recuperó el registro: {nombre: " + string(dbRecord.nombre) + ", direccion: " + string(dbRecord.direccion) + ", telefono: " + string(dbRecord.telefono) + "}");
       this->records.push_back(dbRecord);
     }
     database.close();
@@ -85,7 +85,7 @@ vector<record_t> Database :: selectWhere(record_t filters) {
   vector<record_t> result;
   for (size_t i = 0; i < this->records.size(); i++) {
     if (filteredElement(this->records[i], filters)) {
-      Logger :: getInstance()->registrar("Se filtro el registro { " + string(this->records[i].nombre) + ", " + string(this->records[i].direccion) + ", " + string(this->records[i].telefono) + " }");
+      Logger :: getInstance()->registrar("Se filtró el registro { " + string(this->records[i].nombre) + ", " + string(this->records[i].direccion) + ", " + string(this->records[i].telefono) + " }");
       result.push_back(this->records[i]);
     }
   }
@@ -114,7 +114,7 @@ bool Database :: checkRepeatedRecord(record_t record) {
       return true;
     }
   }
-  Logger :: getInstance()->registrar("El registro a insertar no existe en la base de datos, se puede agregar");
+  Logger :: getInstance()->registrar("El registro a insertar no existe en la base de datos: se puede agregar");
   return false;
 }
 

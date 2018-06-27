@@ -78,6 +78,7 @@ bool Client :: receiveRegisters(string msg) {
  * resultado.
  */
 bool Client :: consultDatabase() {
+  Logger :: getInstance()->registrar("Cliente " + to_string(getpid()) + " envía petición para consultar todos los registros de la base de datos");
   int result = sendRequest(GET_ALL, NULL);
   if (result < 0) {
     perror("No se pudo leer el mensaje del gestor");
@@ -95,6 +96,7 @@ bool Client :: consultDatabase() {
  * indicados por parámetro. Recibe e imprime el resultado.
  */
 bool Client :: consultDatabaseRecord(map<string, string> filters) {
+  Logger :: getInstance()->registrar("Cliente " + to_string(getpid()) + " envía petición para filtrar la base de datos");
   int result = sendRequest(GET_WHERE, &filters);
   if (result < 0) {
     perror("No se pudo escribir el mensaje al gestor");
@@ -112,6 +114,7 @@ bool Client :: consultDatabaseRecord(map<string, string> filters) {
  * operación y la imprime por consola.
  */
 bool Client :: addDatabaseRecord(map<string, string> fields) {
+  Logger :: getInstance()->registrar("Cliente " + to_string(getpid()) + " envía petición para agregar un registro a la base de datos");
   int result = sendRequest(ADD_RECORD, &fields);
   if (result < 0) {
     perror("No se pudo escribir el mensaje al gestor");
@@ -126,13 +129,13 @@ bool Client :: addDatabaseRecord(map<string, string> fields) {
   }
 
   if (response.command == INSERT_OK)
-    cout << "Registro agregado con exito a la Base de Datos" << endl;
+    cout << "Registro agregado con éxito a la Base de Datos" << endl;
 
   else if (response.command == REPEATED_RECORD)
     cout << "No se pudo insertar el registro: ya existe en la Base de Datos" << endl;
 
   else if (response.command == INSERT_ERROR)
-    cout << "No se pudo insertar el registro en la Base de Datos ya que tiene datos vacios" << endl;
+    cout << "No se pudo insertar el registro en la Base de Datos ya que tiene datos vacíos" << endl;
 
   return true;
 }
