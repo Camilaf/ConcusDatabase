@@ -12,6 +12,7 @@ bool inDebugMode(int argc, char *argv[]) {
 
 /* Función principal del programa Gestor de la Base de Datos */
 int main(int argc, char *argv[]) {
+  // Logger
   bool debug = inDebugMode(argc, argv);
   Logger :: setDebug(debug);
   Logger :: getInstance()->registrar("---- Gestor de base de datos iniciado ----");
@@ -30,22 +31,23 @@ int main(int argc, char *argv[]) {
     cout << "------------------------------------" << endl;
     cout << "Esperando peticiones..." << endl;
     if (!manager.receiveRequest()) {
-      if (errno == EINTR)
-        break;
-      perror("Error al recibir la petición");
+      if (errno != EINTR)
+        perror("Error al recibir la petición");
+      break;
     }
 
     cout << "> Petición recibida: " << manager.getRequest() << endl;
     if (!manager.processRequest()) {
-      if (errno == EINTR)
-        break;
-      perror("Error al procesar la petición");
+      if (errno != EINTR)
+        perror("Error al procesar la petición");
+      break;
     }
+
     cout << "> Petición procesada" << endl;
     if (!manager.respondRequest()) {
-      if (errno == EINTR)
-        break;
-      perror("Error al responder la petición");
+      if (errno != EINTR)
+        perror("Error al responder la petición");
+      break;
     }
     cout << "> Petición enviada" << endl;
 

@@ -112,6 +112,7 @@ void DbManager :: sendRegisters(vector<record_t> results) {
  */
 void DbManager :: consultDatabase() {
    vector<record_t> database = this->db->selectAll();
+   Logger :: getInstance()->registrar("Se obtienen todos los registros de la base de datos");
    sendRegisters(database);
 }
 
@@ -122,6 +123,7 @@ void DbManager :: consultRecords() {
   record_t filters = this->request.dbRecords[0];
   Logger :: getInstance()->registrar("Se utilizan los filtros { nombre: " + string(filters.nombre) + ", direccion: " + string(filters.direccion) + ", telefono: " + string(filters.telefono) + " }");
   vector<record_t> results = this->db->selectWhere(filters);
+  Logger :: getInstance()->registrar("Se obtienen los registros filtrados de la base de datos");
   sendRegisters(results);
 }
 
@@ -136,6 +138,9 @@ void DbManager :: addRecord() {
   this->response.push_back(response);
 }
 
+/* Se encarga de definir el mensaje de respuesta y prepararlo para su envío
+ * para aquellos casos en donde haya algún error.
+ */
 void DbManager :: manageInvalidRequest() {
   message_t message;
   message.mtype = this->request.pid;
@@ -178,13 +183,15 @@ bool DbManager :: processRequest() {
 bool DbManager :: respondRequest() {
   for (size_t i = 0; i < this->response.size(); i++) {
     int res = this->queue->escribir(this->response[i]);
-    if ((res < 0) && (errno == EINTR))
+    if (res < 0)
       return false;
   }
   this->response.clear();
   return true;
 }
 
+/* Se encarga de la persistencia de la base de datos.
+ */
 void DbManager :: persistDatabase() {
   this->db->persist();
 }

@@ -132,12 +132,10 @@ bool Parser :: invalidFields(vector<string> tokens, bool allFields) {
       counter++;
       hasName = true;
     }
-
     else if (!hasAddress && (field == "direccion")) {
       counter++;
       hasAddress = true;
     }
-
     else if (!hasTelephone && (field == "telefono")) {
       counter++;
       hasTelephone = true;
@@ -185,26 +183,22 @@ bool Parser :: invalidSyntax(string statement) {
       return true;
     }
   }
-
   else if (command == GET_WHERE_CMD) {
     if (tokens.size() > 4 || invalidFields(tokens, false)) {
       Logger :: getInstance()->registrar("Cliente: Peticion con comando invalido: '" + statement + "'");
       return true;
     }
   }
-
   else if (command == ADD_CMD) {
     if (tokens.size() > 4 || invalidFields(tokens, true)) {
       Logger :: getInstance()->registrar("Cliente: Peticion con comando invalido: '" + statement + "'");
       return true;
     }
   }
-
   else if (command == EXIT_CMD) {
     if (tokens.size() > 1)
       return true;
   }
-
   else {
     Logger :: getInstance()->registrar("Cliente: Peticion con comando invalido: '" + statement + "'");
     return true;
