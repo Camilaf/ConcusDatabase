@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "../Logger.h"
+#include "../DbRecord.h"
 
 #define GET_ALL_CMD "selectall"
 #define GET_WHERE_CMD "selectwhere"
@@ -19,7 +20,7 @@ class Parser {
 private:
   static Parser* instance;
   vector<string> tokenizeString(string str);
-  bool hasData(string element, size_t start, size_t end);
+  bool hasValidData(string element, size_t start, size_t end, string field);
   bool invalidFields(vector<string> tokens, bool allFields);
 
 public:

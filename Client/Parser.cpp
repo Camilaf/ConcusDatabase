@@ -70,9 +70,21 @@ string Parser :: toLower(string input) {
  * información y si el cliente consultó utilizando las comillas
  * correctamente.
  */
-bool Parser :: hasData(string element, size_t start, size_t end) {
+bool Parser :: hasValidData(string element, size_t start, size_t end, string field) {
   // Verificamos que exista algún dato dentro de las comillas
-  if (end - start <= 1) {
+  size_t dataLength = end - start;
+  size_t maxLength;
+  if (field == "nombre")
+    maxLength = NAME_SIZE;
+  else if (field == "direccion")
+    maxLength = ADDRESS_SIZE;
+  else if (field == "telefono")
+    maxLength = TELEPHONE_SIZE;
+  else
+    return false;
+
+
+  if ((dataLength <= 1) || (dataLength > maxLength)) {
     return false;
   }
 
@@ -112,10 +124,10 @@ bool Parser :: invalidFields(vector<string> tokens, bool allFields) {
     if ((endOfField == string::npos) || (endOfField == tokens[i].size() - 1))
       return true;
 
-    if (!hasData(tokens[i], endOfField + 1, tokens[i].size() - 1))
+    string field = tokens[i].substr(0, endOfField);
+    if (!hasValidData(tokens[i], endOfField + 1, tokens[i].size() - 1, field))
       return true;
 
-    string field = tokens[i].substr(0, endOfField);
     if (!hasName && (field == "nombre")) {
       counter++;
       hasName = true;

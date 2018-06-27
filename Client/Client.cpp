@@ -29,7 +29,7 @@ int Client :: sendRequest(int command, map<string, string> *fields) {
 /* Método que recibe un array de struct record e imprime
  * en consola los elementos que tienen información.
  */
-void Client :: printRecords(record_t *records) {
+void Client :: printRecords(record_t *records, string msg) {
   size_t pos = 0;
   bool next = true;
   while (next && (pos < RECORD_LIMIT)) {
@@ -43,26 +43,22 @@ void Client :: printRecords(record_t *records) {
   }
 
   if (pos == 0)
-    cout << "No hay registros en la base de datos" << endl;
+    cout << msg << endl;
 }
 
 /* Método encargado de recibir la respuesta del gestor de la base de datos
  * a la consulta realizada, y de imprimir en la consola los registros.
  */
-bool Client :: receiveRegisters() {
+bool Client :: receiveRegisters(string msg) {
   message_t response;
   int result = this->queue->leer(getpid(), &response);
   if (result < 0) {
-    if (result == EIDRM) {
-      perror("Error: el gestor finalizó la ejecución");
-    }
-    else
-      perror("No se pudo leer el mensaje del gestor");
+    perror("No se pudo leer el mensaje del gestor");
     return false;
   }
 
   cout << "Base de datos consultada. Registros:" << endl << endl;
-  printRecords(response.dbRecords);
+  printRecords(response.dbRecords, msg);
 
   // Si la cantidad de registros supera RECORD_LIMIT los recibo también
   while (response.next) {
@@ -71,7 +67,7 @@ bool Client :: receiveRegisters() {
       perror("No se pudo leer el mensaje del gestor");
       return false;
     }
-    printRecords(response.dbRecords);
+    printRecords(response.dbRecords, msg);
   }
   return true;
 }
@@ -87,7 +83,8 @@ bool Client :: consultDatabase() {
     perror("No se pudo leer el mensaje del gestor");
     return false;
   }
-  if (!receiveRegisters())
+  string noResults = "No hay registros en la base de datos";
+  if (!receiveRegisters(noResults))
     return false;
   return true;
 }
@@ -103,7 +100,8 @@ bool Client :: consultDatabaseRecord(map<string, string> filters) {
     perror("No se pudo escribir el mensaje al gestor");
     return false;
   }
-  if (!receiveRegisters())
+  string noResults = "No se encontraron registros con esos valores en la base de datos";
+  if (!receiveRegisters(noResults))
     return false;
   return true;
 }

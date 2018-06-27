@@ -14,9 +14,9 @@ class Client {
 private:
   Cola<message_t>* queue;
   message_t request;
-  void printRecords(record_t *records);
+  void printRecords(record_t *records, string msg);
   int sendRequest(int command, map<string, string> *fields);
-  bool receiveRegisters();
+  bool receiveRegisters(string msg);
 
 public:
   Client(const string& file, const char letter);
