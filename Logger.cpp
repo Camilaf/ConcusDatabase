@@ -37,8 +37,14 @@ void Logger :: destruir() {
 void Logger :: registrar(string mensaje) {
   if (modoDebug) {
     char buffer[TIMESTAMP_SIZE];
-    time_t now = time(0);
-    strftime(buffer, TIMESTAMP_SIZE, "[ %Y-%m-%d %H:%M:%S ] ", localtime(&now));
+    timeval curTime;
+    gettimeofday(&curTime, NULL);
+    int milli = curTime.tv_usec / 1000;
+
+    //time_t now = time(0);
+    strftime(buffer, TIMESTAMP_SIZE, "[ %Y-%m-%d %H:%M:%S", localtime(&curTime.tv_sec));
+    char timeBuf[TIMESTAMP_SIZE];
+    sprintf(timeBuf, "%s:%d ] ", buffer, milli);
 
     LockFile lock("log.txt");
     if (lock.tomarLock() < 0) {
@@ -47,7 +53,7 @@ void Logger :: registrar(string mensaje) {
       }
       cerr << "Error al tomar el lock: " << strerror(errno) << endl;
     }
-    mensaje = string(buffer) + mensaje + "\n";
+    mensaje = string(timeBuf) + mensaje + "\n";
     lseek(this->fd, 0, SEEK_END);
     write(this->fd, mensaje.c_str(), mensaje.length());
 

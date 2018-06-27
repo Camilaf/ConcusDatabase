@@ -8,6 +8,7 @@
 #include <fcntl.h>
 #include <cerrno>
 #include <cstring>
+#include <sys/time.h>
 #include "Lock/LockFile.h"
 #define LOGFILE "log.txt"
 using namespace std;
